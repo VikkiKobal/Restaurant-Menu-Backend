@@ -49,21 +49,36 @@ exports.create = async (menuItem) => {
 
 exports.update = async (id, menuItem) => {
     await poolConnect;
-    const { Name, Description, Price, CategoryId } = menuItem;
+
+    const existing = await exports.findById(id);
+    if (!existing) return null;
+
+    const name = menuItem.name ?? existing.name;
+    const description = menuItem.description ?? existing.description;
+    const price = menuItem.price ?? existing.price;
+    const category_id = menuItem.category_id ?? existing.category_id;
+    const image_url = menuItem.image_url ?? existing.image_url;
+    const is_available = menuItem.is_available ?? existing.is_available;
+
     const request = new sql.Request();
     request.input('Id', sql.Int, id);
-    request.input('Name', sql.NVarChar, Name);
-    request.input('Description', sql.NVarChar, Description);
-    request.input('Price', sql.Decimal(10, 2), Price);
-    request.input('CategoryId', sql.Int, CategoryId);
+    request.input('Name', sql.NVarChar, name);
+    request.input('Description', sql.NVarChar, description);
+    request.input('Price', sql.Decimal(10, 2), price);
+    request.input('category_id', sql.Int, category_id);
+    request.input('image_url', sql.NVarChar, image_url);
+    request.input('is_available', sql.Bit, is_available);
+
     const result = await request.query(`
-    UPDATE MenuItems
-    SET Name = @Name, Description = @Description, Price = @Price, CategoryId = @CategoryId
-    OUTPUT INSERTED.*
-    WHERE Id = @Id
-  `);
+      UPDATE MenuItems
+      SET Name = @Name, Description = @Description, Price = @Price, category_id = @category_id, image_url = @image_url, is_available = @is_available
+      OUTPUT INSERTED.*
+      WHERE Id = @Id
+    `);
+
     return result.recordset[0];
 };
+
 
 exports.delete = async (id) => {
     await poolConnect;

@@ -4,18 +4,21 @@ const path = require('path');
 
 const { connect } = require('./db');
 const menuRoutes = require('./routes/menuRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');  // <-- додано
+const uploadRoutes = require('./routes/uploadRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Робимо папку 'assets/images' доступною на /assets/images/...
+app.use('/api/categories', categoryRoutes);
 app.use('/assets/images', express.static(path.join(__dirname, 'assets/images')));
 
 app.use('/api/menu', menuRoutes);
-app.use('/api/upload', uploadRoutes);   // <-- додано
+app.use('/api/upload', uploadRoutes);
+
+
 
 // Middleware для обробки помилок
 app.use((err, req, res, next) => {

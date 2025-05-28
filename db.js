@@ -14,8 +14,6 @@ async function connect() {
 }
 
 
-
-
 async function connect() {
     try {
         await sql.connect(config);
