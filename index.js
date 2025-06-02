@@ -9,7 +9,7 @@ const menuRoutes = require('./routes/menuRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 
-const app = express(); 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
@@ -19,8 +19,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Статика для зображень
 app.use('/assets/images', express.static(path.join(__dirname, 'assets/images')));
+app.use('/menu', require('./routes/menuRoutes'));
 
 app.use('/api/auth', userRoutes);
 app.use('/api/categories', categoryRoutes);

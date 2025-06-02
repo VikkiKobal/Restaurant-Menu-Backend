@@ -37,9 +37,40 @@ exports.create = async (req, res, next) => {
     }
 };
 
+exports.delete = async (req, res, next) => {
+    try {
+        await menuService.delete(Number(req.params.id));
+        res.status(204).send();
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.addDishWithFile = async (req, res, next) => {
+    try {
+        const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
+        const { name, price, description, is_available, category_id, special_category } = req.body;
+
+        const newItem = await menuService.create({
+            name,
+            price: Number(price),
+            description,
+            image_url,
+            is_available: is_available === 'true',
+            category_id: Number(category_id),
+            special_category,
+        });
+
+        res.status(201).json(newItem);
+    } catch (err) {
+        console.error('Error in addDishWithFile:', err);
+        next(err);
+    }
+};
 
 exports.update = async (req, res, next) => {
     try {
+        console.log('PUT /api/menu/:id called with ID:', req.params.id, 'Data:', req.body);
         const updatedItem = await menuService.update(Number(req.params.id), req.body);
         if (!updatedItem) {
             return res.status(404).json({ message: 'Menu item not found' });
@@ -50,10 +81,33 @@ exports.update = async (req, res, next) => {
     }
 };
 
-exports.delete = async (req, res, next) => {
+exports.updateDishWithFile = async (req, res, next) => {
     try {
-        await menuService.delete(Number(req.params.id));
-        res.status(204).send();
+        const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
+        console.log('PUT /api/menu/menu-items/upload/:id called with ID:', req.params.id, 'Data:', req.body, 'Image:', image_url);
+        const {
+            name,
+            price,
+            description,
+            is_available,
+            category_id,
+            special_category
+        } = req.body;
+
+        const updatedItem = await menuService.update(Number(req.params.id), {
+            name,
+            price: Number(price),
+            description,
+            is_available: is_available === 'true' || is_available === true,
+            category_id: category_id ? Number(category_id) : null,
+            special_category,
+            ...(image_url && { image_url })
+        });
+
+        if (!updatedItem) {
+            return res.status(404).json({ message: 'Menu item not found' });
+        }
+        res.json(updatedItem);
     } catch (err) {
         next(err);
     }
