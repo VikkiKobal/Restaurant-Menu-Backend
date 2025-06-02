@@ -10,13 +10,21 @@ exports.findAll = async () => {
     return result.recordset;
 };
 
-exports.findByCategory = async (categoryId) => {
+exports.findByCategory = async (categoryId, specialsOnly = false) => {
     await poolConnect;
     const request = new sql.Request();
-    request.input('categoryId', sql.Int, categoryId);
-    const result = await request.query('SELECT * FROM MenuItems WHERE CategoryId = @categoryId');
-    return result.recordset;
+
+    if (specialsOnly || categoryId === 1) {
+        const result = await request.query('SELECT * FROM MenuItems WHERE special_category = 1');
+        return result.recordset;
+    } else {
+        request.input('categoryId', sql.Int, categoryId);
+        const result = await request.query('SELECT * FROM MenuItems WHERE category_id = @categoryId');
+        return result.recordset;
+    }
 };
+
+
 
 exports.findById = async (id) => {
     await poolConnect;

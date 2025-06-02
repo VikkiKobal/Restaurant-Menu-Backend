@@ -10,6 +10,22 @@ const getAllCategories = async (req, res) => {
     }
 };
 
+const getDishes = async (req, res) => {
+    const { categoryId, specialsOnly } = req.query;
+
+    try {
+        const dishes = await dishService.findByCategory(
+            categoryId ? parseInt(categoryId) : null,
+            specialsOnly === 'true'
+        );
+        res.json(dishes);
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+
 module.exports = {
     getAllCategories
 };
+

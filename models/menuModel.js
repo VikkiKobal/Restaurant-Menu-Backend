@@ -1,4 +1,4 @@
-const { poolConnect, sql } = require('../config/db');
+const { poolConnect, sql } = require('./db');
 
 exports.findAll = async () => {
     await poolConnect;
