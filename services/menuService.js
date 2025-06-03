@@ -10,22 +10,6 @@ exports.findAll = async () => {
     return result.recordset;
 };
 
-exports.findByCategory = async (categoryId, specialsOnly = false) => {
-    await poolConnect;
-    const request = new sql.Request();
-
-    if (specialsOnly || categoryId === 1) {
-        const result = await request.query('SELECT * FROM MenuItems WHERE special_category = 1');
-        return result.recordset;
-    } else {
-        request.input('categoryId', sql.Int, categoryId);
-        const result = await request.query('SELECT * FROM MenuItems WHERE category_id = @categoryId');
-        return result.recordset;
-    }
-};
-
-
-
 exports.findById = async (id) => {
     await poolConnect;
     const request = new sql.Request();
@@ -34,9 +18,24 @@ exports.findById = async (id) => {
     return result.recordset[0];
 };
 
+
+exports.findByCategory = async (categoryId, specialsOnly = false) => {
+    await poolConnect;
+    const request = new sql.Request();
+
+    if (specialsOnly || categoryId === 1) {
+        const result = await request.query('SELECT * FROM MenuItems WHERE is_special = 1');
+        return result.recordset;
+    } else {
+        request.input('categoryId', sql.Int, categoryId);
+        const result = await request.query('SELECT * FROM MenuItems WHERE category_id = @categoryId');
+        return result.recordset;
+    }
+};
+
 exports.create = async (menuItem) => {
     await poolConnect;
-    const { name, description, price, image_url, is_available, category_id, special_category } = menuItem;
+    const { name, description, price, image_url, is_available, category_id, is_special } = menuItem;
 
     const request = new sql.Request();
     request.input('name', sql.NVarChar, name);
@@ -45,17 +44,15 @@ exports.create = async (menuItem) => {
     request.input('image_url', sql.NVarChar, image_url);
     request.input('is_available', sql.Bit, is_available);
     request.input('category_id', sql.Int, category_id);
-    request.input('special_category', sql.NVarChar, special_category);
+    request.input('is_special', sql.Bit, is_special); // Зміна з special_category на is_special
 
     const result = await request.query(`
-      INSERT INTO MenuItems (name, description, price, image_url, is_available, category_id, special_category)
+      INSERT INTO MenuItems (name, description, price, image_url, is_available, category_id, is_special)
       OUTPUT INSERTED.*
-      VALUES (@name, @description, @price, @image_url, @is_available, @category_id, @special_category)
+      VALUES (@name, @description, @price, @image_url, @is_available, @category_id, @is_special)
     `);
     return result.recordset[0];
 };
-
-
 
 exports.update = async (id, menuItem) => {
     await poolConnect;
@@ -69,7 +66,7 @@ exports.update = async (id, menuItem) => {
     const category_id = menuItem.category_id ?? existing.category_id;
     const image_url = menuItem.image_url ?? existing.image_url;
     const is_available = menuItem.is_available ?? existing.is_available;
-    const special_category = menuItem.special_category ?? existing.special_category;
+    const is_special = menuItem.is_special ?? existing.is_special; // Зміна з special_category на is_special
 
     const request = new sql.Request();
     request.input('Id', sql.Int, id);
@@ -79,7 +76,7 @@ exports.update = async (id, menuItem) => {
     request.input('category_id', sql.Int, category_id);
     request.input('image_url', sql.NVarChar, image_url);
     request.input('is_available', sql.Bit, is_available);
-    request.input('special_category', sql.NVarChar, special_category);
+    request.input('is_special', sql.Bit, is_special); // Зміна з special_category на is_special
 
     const result = await request.query(`
       UPDATE MenuItems
@@ -89,14 +86,13 @@ exports.update = async (id, menuItem) => {
           category_id = @category_id,
           image_url = @image_url,
           is_available = @is_available,
-          special_category = @special_category
+          is_special = @is_special
       OUTPUT INSERTED.*
       WHERE Id = @Id
     `);
 
     return result.recordset[0];
 };
-
 
 
 exports.delete = async (id) => {

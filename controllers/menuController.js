@@ -49,7 +49,7 @@ exports.delete = async (req, res, next) => {
 exports.addDishWithFile = async (req, res, next) => {
     try {
         const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
-        const { name, price, description, is_available, category_id, special_category } = req.body;
+        const { name, price, description, is_available, category_id, is_special } = req.body;
 
         const newItem = await menuService.create({
             name,
@@ -58,12 +58,37 @@ exports.addDishWithFile = async (req, res, next) => {
             image_url,
             is_available: is_available === 'true',
             category_id: Number(category_id),
-            special_category,
+            is_special: is_special === 'true' || is_special === true, // Зміна з special_category на is_special
         });
 
         res.status(201).json(newItem);
     } catch (err) {
         console.error('Error in addDishWithFile:', err);
+        next(err);
+    }
+};
+
+exports.updateDishWithFile = async (req, res, next) => {
+    try {
+        const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
+        console.log('PUT /api/menu/menu-items/upload/:id called with ID:', req.params.id, 'Data:', req.body, 'Image:', image_url);
+        const { name, price, description, is_available, category_id, is_special } = req.body;
+
+        const updatedItem = await menuService.update(Number(req.params.id), {
+            name,
+            price: Number(price),
+            description,
+            is_available: is_available === 'true' || is_available === true,
+            category_id: category_id ? Number(category_id) : null,
+            is_special: is_special === 'true' || is_special === true, // Зміна з special_category на is_special
+            ...(image_url && { image_url })
+        });
+
+        if (!updatedItem) {
+            return res.status(404).json({ message: 'Menu item not found' });
+        }
+        res.json(updatedItem);
+    } catch (err) {
         next(err);
     }
 };
@@ -81,34 +106,3 @@ exports.update = async (req, res, next) => {
     }
 };
 
-exports.updateDishWithFile = async (req, res, next) => {
-    try {
-        const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
-        console.log('PUT /api/menu/menu-items/upload/:id called with ID:', req.params.id, 'Data:', req.body, 'Image:', image_url);
-        const {
-            name,
-            price,
-            description,
-            is_available,
-            category_id,
-            special_category
-        } = req.body;
-
-        const updatedItem = await menuService.update(Number(req.params.id), {
-            name,
-            price: Number(price),
-            description,
-            is_available: is_available === 'true' || is_available === true,
-            category_id: category_id ? Number(category_id) : null,
-            special_category,
-            ...(image_url && { image_url })
-        });
-
-        if (!updatedItem) {
-            return res.status(404).json({ message: 'Menu item not found' });
-        }
-        res.json(updatedItem);
-    } catch (err) {
-        next(err);
-    }
-};
