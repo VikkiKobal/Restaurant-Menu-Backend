@@ -5,7 +5,7 @@ async function createAdmin() {
     try {
         const pool = await connect();
 
-        const email = 'admin@restaurant.com';  
+        const email = 'admin@restaurant.com';
         const plainPassword = 'adminOfRestaurant';
         const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
