@@ -1,21 +1,23 @@
-const sql = require('mssql/msnodesqlv8');
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const config = {
-    connectionString: 'Driver={ODBC Driver 17 for SQL Server};Server=DESKTOP-T94V6UV\\SQLEXPRESS;Database=RestaurantDB;Trusted_Connection=yes;'
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+});
+
+const connect = async () => {
+    try {
+        const client = await pool.connect();
+        client.release();
+        console.log('Connected to PostgreSQL');
+    } catch (err) {
+        console.error('Failed to connect to PostgreSQL:', err);
+        throw err;
+    }
 };
 
-let pool;
-
-async function connect() {
-    if (pool) return pool;
-    try {
-        pool = await sql.connect(config);
-        console.log('Підключення через Windows Authentication встановлено');
-        return pool;
-    } catch (err) {
-        console.error('Помилка підключення:', err);
-        throw err; 
-    }
-}
-
-module.exports = { sql, connect };
+module.exports = { pool, connect };

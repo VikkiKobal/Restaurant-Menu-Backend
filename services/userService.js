@@ -1,28 +1,43 @@
+const db = require('../db');
 const bcrypt = require('bcrypt');
-const { getUserByEmail, addUser } = require('../models/userModel');
 
-async function registerUser(email, password, role = 'user') {
-    const existingUser = await getUserByEmail(email);
-    if (existingUser) {
-        throw new Error('Користувач уже існує');
+async function addUser({ email, password, role }) {
+    try {
+        if (!email || !password || !role) {
+            throw new Error('Email, password, and role are required');
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            throw new Error('Invalid email format');
+        }
+
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const result = await db.pool.query(
+            `INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING *`,
+            [email.trim().toLowerCase(), hashedPassword, role]
+        );
+        return result.rows[0];
+    } catch (err) {
+        console.error('Помилка додавання користувача:', err);
+        throw new Error(err.message || 'Failed to add user');
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await addUser({ email, password: hashedPassword, role });
 }
 
-async function loginUser(email, password) {
-    console.log('Email для пошуку:', email);
-    const user = await getUserByEmail(email);
-    console.log('Знайдений користувач:', user);
-    if (!user) {
-        throw new Error('Користувача не знайдено');
+async function getUserByEmail(email) {
+    try {
+        if (!email) {
+            throw new Error('Email is required');
+        }
+        const result = await db.pool.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [email.trim().toLowerCase()]
+        );
+        return result.rows[0];
+    } catch (err) {
+        console.error('Помилка пошуку користувача:', err);
+        throw new Error('Failed to fetch user');
     }
-    const isValid = await bcrypt.compare(password, user.Password);
-    if (!isValid) {
-        throw new Error('Невірний пароль');
-    }
-    return user;
 }
 
-
-module.exports = { registerUser, loginUser };
+module.exports = { addUser, getUserByEmail };

@@ -1,18 +1,13 @@
 const db = require('../db');
-const sql = db.sql;
-const dbConfig = require('../db');
 
 const fetchCategories = async () => {
     try {
-        await sql.connect(dbConfig);
-        const result = await sql.query('SELECT id, name FROM Categories');
-        return result.recordset;
+        const result = await db.pool.query('SELECT id, name FROM categories ORDER BY name');
+        return result.rows;
     } catch (err) {
         console.error('Помилка сервісу категорій:', err);
-        throw err;
+        throw new Error('Failed to fetch categories');
     }
 };
 
-module.exports = {
-    fetchCategories
-};
+module.exports = { fetchCategories };

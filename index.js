@@ -32,10 +32,13 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Internal server error' });
 });
 
-connect().then(() => {
-    app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
+// Підключення до БД та старт сервера
+connect()
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server running on http://localhost:${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('Не вдалося підключитись до бази даних:', err);
     });
-}).catch(err => {
-    console.error('Не вдалося підключитись до бази даних:', err);
-});

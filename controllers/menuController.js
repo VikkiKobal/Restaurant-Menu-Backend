@@ -5,12 +5,16 @@ exports.getAll = async (req, res, next) => {
         const { categoryId } = req.query;
         let items;
         if (categoryId) {
+            if (isNaN(parseInt(categoryId))) {
+                return res.status(400).json({ message: 'Invalid categoryId' });
+            }
             items = await menuService.findByCategory(Number(categoryId));
         } else {
             items = await menuService.findAll();
         }
         res.json(items);
     } catch (err) {
+        console.error('Error in getAll:', err);
         next(err);
     }
 };
@@ -48,22 +52,26 @@ exports.delete = async (req, res, next) => {
 
 exports.addDishWithFile = async (req, res, next) => {
     try {
+        console.log('req.body:', req.body);
+        console.log('req.file:', req.file);
         const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
         const { name, price, description, is_available, category_id, is_special } = req.body;
+        if (!name || !price || !category_id) {
+            return res.status(400).json({ message: 'Name, price, and category_id are required' });
+        }
 
         const newItem = await menuService.create({
             name,
             price: Number(price),
-            description,
+            description: description || null,
             image_url,
-            is_available: is_available === 'true',
+            is_available: is_available === 'true' || is_available === true,
             category_id: Number(category_id),
-            is_special: is_special === 'true' || is_special === true, // Зміна з special_category на is_special
+            is_special: is_special === 'true' || is_special === true,
         });
-
         res.status(201).json(newItem);
     } catch (err) {
-        console.error('Error in addDishWithFile:', err);
+        console.error('Помилка в addDishWithFile:', err);
         next(err);
     }
 };
