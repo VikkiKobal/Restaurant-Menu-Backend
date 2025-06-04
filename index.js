@@ -12,8 +12,20 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const allowedOrigins = [
+    'http://localhost:8080',               // локальний фронтенд
+    'https://menurestaurantweb.netlify.app/',  // твій Netlify фронтенд (заміни на свій реальний URL)
+];
+
 app.use(cors({
-    origin: 'http://localhost:8080',
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true); // для Postman, curl, серверних запитів
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 
