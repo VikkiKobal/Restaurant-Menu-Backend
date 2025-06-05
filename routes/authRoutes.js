@@ -23,18 +23,21 @@ router.post('/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.is_admin ? 'admin' : 'user' },
+            { id: user.id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
         console.log('Token generated:', token); // Debug
-        res.json({ token, user: { id: user.id, email: user.email, role: user.is_admin ? 'admin' : 'user' } });
+
+        res.json({ token, user: { id: user.id, email: user.email, role: user.role } });
+
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
@@ -48,8 +51,8 @@ router.post('/register', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await pool.query(
-            'INSERT INTO users (email, password, is_admin) VALUES ($1, $2, $3) RETURNING id, email, is_admin',
-            [email, hashedPassword, false]
+            'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING id, email, role',
+            [email, hashedPassword, 'user']
         );
 
         res.status(201).json({ message: 'Registration successful' });
