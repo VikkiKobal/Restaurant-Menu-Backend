@@ -13,8 +13,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
-    'http://localhost:8080',               // локальний фронтенд
-    'https://menurestaurantweb.netlify.app/',  // твій Netlify фронтенд (заміни на свій реальний URL)
+    'http://localhost:8080',
+    'https://menurestaurantweb.netlify.app/',
 ];
 
 app.use(cors({
