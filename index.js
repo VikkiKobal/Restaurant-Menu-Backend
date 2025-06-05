@@ -14,13 +14,12 @@ const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
     'http://localhost:8080',
-    'https://menurestaurantweb.netlify.app/',
+    'https://menurestaurantweb.netlify.app',
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin) return callback(null, true); // для Postman, curl, серверних запитів
-        if (allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -30,10 +29,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
 app.use('/assets/images', express.static(path.join(__dirname, 'assets/images')));
-app.use('/menu', require('./routes/menuRoutes'));
-
 app.use('/api/auth', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/menu', menuRoutes);
@@ -44,13 +40,12 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Internal server error' });
 });
 
-// Підключення до БД та старт сервера
 connect()
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
+            console.log(`Server running on port ${PORT}`);
         });
     })
     .catch(err => {
-        console.error('Не вдалося підключитись до бази даних:', err);
+        console.error('Failed to connect to database:', err);
     });
