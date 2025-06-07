@@ -6,16 +6,16 @@ async function addUser({ email, password, role = 'user' }) {
         console.log(`[${new Date().toISOString()}] addUser called with email: ${email}, role: ${role}`);
 
         if (!email || !password) {
-            console.warn(`[${new Date().toISOString()}] addUser failed: Email and password are required`);
+            console.log(`[${new Date().toISOString()}] addUser failed: Email and password are required`);
             throw new Error('Email and password are required');
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            console.warn(`[${new Date().toISOString()}] addUser failed: Invalid email format - ${email}`);
+            console.log(`[${new Date().toISOString()}] addUser failed: Invalid email format - ${email}`);
             throw new Error('Invalid email format');
         }
         const existingUser = await db.pool.query('SELECT * FROM users WHERE email = $1', [email.trim().toLowerCase()]);
         if (existingUser.rows.length > 0) {
-            console.warn(`[${new Date().toISOString()}] addUser failed: Email already exists - ${email}`);
+            console.log(`[${new Date().toISOString()}] addUser failed: Email already exists - ${email}`);
             throw new Error('Email already exists');
         }
         const saltRounds = 10;
@@ -37,7 +37,7 @@ async function getUserByEmail(email) {
         console.log(`[${new Date().toISOString()}] getUserByEmail called with email: ${email}`);
 
         if (!email) {
-            console.warn(`[${new Date().toISOString()}] getUserByEmail failed: Email is required`);
+            console.log(`[${new Date().toISOString()}] getUserByEmail failed: Email is required`);
             throw new Error('Email is required');
         }
         const result = await db.pool.query(
@@ -45,7 +45,7 @@ async function getUserByEmail(email) {
             [email.trim().toLowerCase()]
         );
         if (!result.rows.length) {
-            console.warn(`[${new Date().toISOString()}] getUserByEmail: No user found with email ${email}`);
+            console.log(`[${new Date().toISOString()}] getUserByEmail: No user found with email ${email}`);
         } else {
             console.log(`[${new Date().toISOString()}] getUserByEmail success: User found with id ${result.rows[0].id}`);
         }
