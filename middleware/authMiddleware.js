@@ -1,28 +1,29 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const JWT_SECRET = process.env.JWT_SECRET;
-
-app.use(express.json());
-
+const TOKEN_KEY = process.env.JWT_SECRET;
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) return res.status(401).json({ message: 'Токен не надано' });
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Токен невалідний' });
+    if (!token) {
+        return res.status(401).json({ message: 'Токен не надано' });
+    }
+    try {
+        const user = jwt.verify(token, TOKEN_KEY);
         req.user = user;
         next();
-    });
+    } catch (err) {
+        console.error(`Authentication failed: ${err.message}, Token: ${token}, IP: ${req.ip}`);
+        return res.status(403).json({ message: 'Токен невалідний' });
+    }
 }
 
 function authorizeAdmin(req, res, next) {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Доступ заборонено: лише для адміністраторів' });
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Доступ заборонено: лише для адміністраторів' });
     }
-    next();
 }
 
 module.exports = { authenticateToken, authorizeAdmin };
