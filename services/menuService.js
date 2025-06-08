@@ -3,6 +3,7 @@ const db = require('../db');
 exports.findAll = async () => {
     try {
         const result = await db.pool.query('SELECT * FROM menu_items ORDER BY name');
+        console.log('Fetched menu items from DB:', JSON.stringify(result.rows, null, 2));
         return result.rows;
     } catch (err) {
         console.error('Помилка пошуку елементів меню:', err);
@@ -101,6 +102,34 @@ exports.update = async (id, menuItem) => {
     } catch (err) {
         console.error('Помилка оновлення елемента меню:', err);
         throw new Error(err.message || 'Failed to update menu item');
+    }
+};
+
+exports.updateDishWithFile = async (req, res, next) => {
+    try {
+        const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
+        console.log('PUT /api/menu/menu-items/upload/:id called with ID:', req.params.id);
+        console.log('req.body:', req.body);
+        console.log('req.file:', req.file);
+        console.log('image_url to save:', image_url);
+        const { name, price, description, is_available, category_id, is_special } = req.body;
+        const updatedItem = await menuService.update(Number(req.params.id), {
+            name,
+            price: Number(price),
+            description,
+            is_available: is_available === 'true' || is_available === true,
+            category_id: category_id ? Number(category_id) : null,
+            is_special: is_special === 'true' || is_special === true,
+            ...(image_url && { image_url }),
+        });
+        console.log('Updated item:', JSON.stringify(updatedItem, null, 2));
+        if (!updatedItem) {
+            return res.status(404).json({ message: 'Menu item not found' });
+        }
+        res.json(updatedItem);
+    } catch (err) {
+        console.error('Error in updateDishWithFile:', err);
+        next(err);
     }
 };
 

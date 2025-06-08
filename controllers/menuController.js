@@ -12,6 +12,7 @@ exports.getAll = async (req, res, next) => {
         } else {
             items = await menuService.findAll();
         }
+        res.set('Cache-Control', 'no-store');
         res.json(items);
     } catch (err) {
         console.error('Error in getAll:', err);
@@ -88,7 +89,7 @@ exports.updateDishWithFile = async (req, res, next) => {
             description,
             is_available: is_available === 'true' || is_available === true,
             category_id: category_id ? Number(category_id) : null,
-            is_special: is_special === 'true' || is_special === true, 
+            is_special: is_special === 'true' || is_special === true,
             ...(image_url && { image_url })
         });
 
