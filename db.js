@@ -11,6 +11,8 @@ const pool = new Pool({
 const connect = async () => {
     try {
         const client = await pool.connect();
+        const res = await client.query('SELECT current_database(), current_user, inet_server_addr();');
+        console.log('Connected to DB:', res.rows[0]);
         client.release();
         console.log('Connected to PostgreSQL');
     } catch (err) {
@@ -18,5 +20,6 @@ const connect = async () => {
         throw err;
     }
 };
+
 
 module.exports = { pool, connect };
