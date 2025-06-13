@@ -88,7 +88,7 @@ exports.updateDishWithFile = async (req, res, next) => {
             description,
             is_available: is_available === 'true' || is_available === true,
             category_id: category_id ? Number(category_id) : null,
-            is_special: is_special === 'true' || is_special === true, // Зміна з special_category на is_special
+            is_special: is_special === 'true' || is_special === true, 
             ...(image_url && { image_url })
         });
 
