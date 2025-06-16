@@ -79,7 +79,6 @@ exports.addDishWithFile = async (req, res, next) => {
 exports.updateDishWithFile = async (req, res, next) => {
     try {
         const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
-        console.log('PUT /api/menu/menu-items/upload/:id called with ID:', req.params.id, 'Data:', req.body, 'Image:', image_url);
         const { name, price, description, is_available, category_id, is_special } = req.body;
 
         const updatedItem = await menuService.update(Number(req.params.id), {
@@ -103,7 +102,6 @@ exports.updateDishWithFile = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
     try {
-        console.log('PUT /api/menu/:id called with ID:', req.params.id, 'Data:', req.body);
         const updatedItem = await menuService.update(Number(req.params.id), req.body);
         if (!updatedItem) {
             return res.status(404).json({ message: 'Menu item not found' });

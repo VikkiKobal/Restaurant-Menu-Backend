@@ -5,7 +5,6 @@ exports.findAll = async () => {
         const result = await db.pool.query('SELECT * FROM menu_items ORDER BY name');
         return result.rows;
     } catch (err) {
-        console.error('Помилка пошуку елементів меню:', err);
         throw new Error('Failed to fetch menu items');
     }
 };
@@ -18,7 +17,6 @@ exports.findById = async (id) => {
         const result = await db.pool.query('SELECT * FROM menu_items WHERE id = $1', [id]);
         return result.rows[0];
     } catch (err) {
-        console.error('Помилка пошуку елемента меню:', err);
         throw new Error('Failed to fetch menu item');
     }
 };
@@ -35,7 +33,6 @@ exports.findByCategory = async (categoryId, specialsOnly = false) => {
         const result = await db.pool.query('SELECT * FROM menu_items WHERE category_id = $1', [categoryId]);
         return result.rows;
     } catch (err) {
-        console.error('Помилка пошуку елементів меню за категорією:', err);
         throw new Error('Failed to fetch menu items by category');
     }
 };
@@ -59,7 +56,6 @@ exports.create = async (menuItem) => {
         );
         return result.rows[0];
     } catch (err) {
-        console.error('Помилка створення елемента меню:', err);
         throw new Error(err.message || 'Failed to create menu item');
     }
 };
@@ -99,7 +95,6 @@ exports.update = async (id, menuItem) => {
         );
         return result.rows[0];
     } catch (err) {
-        console.error('Помилка оновлення елемента меню:', err);
         throw new Error(err.message || 'Failed to update menu item');
     }
 };
@@ -112,7 +107,6 @@ exports.delete = async (id) => {
         const result = await db.pool.query('DELETE FROM menu_items WHERE id = $1 RETURNING id', [id]);
         return result.rowCount > 0;
     } catch (err) {
-        console.error('Помилка видалення елемента меню:', err);
         throw new Error('Failed to delete menu item');
     }
 };
