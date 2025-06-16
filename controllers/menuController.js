@@ -12,9 +12,10 @@ exports.getAll = async (req, res, next) => {
         } else {
             items = await menuService.findAll();
         }
+        console.log('items from DB:', items);
         res.json(items);
     } catch (err) {
-        console.error('Error in getAll:', err);
+        console.error('Error in getAll:', err.stack);
         next(err);
     }
 };
@@ -27,6 +28,7 @@ exports.getById = async (req, res, next) => {
         }
         res.json(item);
     } catch (err) {
+        console.error('Error in getById:', err.stack);
         next(err);
     }
 };
@@ -36,7 +38,7 @@ exports.create = async (req, res, next) => {
         const newItem = await menuService.create(req.body);
         res.status(201).json(newItem);
     } catch (err) {
-        console.error('Error in create controller:', err);
+        console.error('Error in create controller:', err.stack);
         next(err);
     }
 };
@@ -46,6 +48,7 @@ exports.delete = async (req, res, next) => {
         await menuService.delete(Number(req.params.id));
         res.status(204).send();
     } catch (err) {
+        console.error('Error in delete:', err.stack);
         next(err);
     }
 };
@@ -54,12 +57,16 @@ exports.addDishWithFile = async (req, res, next) => {
     try {
         console.log('req.body:', req.body);
         console.log('req.file:', req.file);
-        const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
-        const { name, price, description, is_available, category_id, is_special } = req.body;
+        const { name, price, description, is_available, category_id, is_special, portion_size } = req.body;
         if (!name || !price || !category_id) {
             return res.status(400).json({ message: 'Name, price, and category_id are required' });
         }
+        const portionSizeNumber = portion_size ? Number(portion_size) : null;
+        if (portion_size && (isNaN(portionSizeNumber) || portionSizeNumber < 0)) {
+            return res.status(400).json({ message: 'Portion size must be a positive number' });
+        }
 
+        const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
         const newItem = await menuService.create({
             name,
             price: Number(price),
@@ -68,27 +75,34 @@ exports.addDishWithFile = async (req, res, next) => {
             is_available: is_available === 'true' || is_available === true,
             category_id: Number(category_id),
             is_special: is_special === 'true' || is_special === true,
+            portion_size: portionSizeNumber,
         });
         res.status(201).json(newItem);
     } catch (err) {
-        console.error('Помилка в addDishWithFile:', err);
+        console.error('Помилка в addDishWithFile:', err.stack);
         next(err);
     }
 };
 
 exports.updateDishWithFile = async (req, res, next) => {
     try {
+        console.log('PUT /api/menu/menu-items/upload/:id called with ID:', req.params.id, 'Data:', req.body, 'File:', req.file);
+        const { name, price, description, is_available, category_id, is_special, portion_size } = req.body;
         const image_url = req.file ? `/assets/images/${req.file.filename}` : null;
-        const { name, price, description, is_available, category_id, is_special } = req.body;
+        const portionSizeNumber = portion_size ? Number(portion_size) : null;
+        if (portion_size && (isNaN(portionSizeNumber) || portionSizeNumber < 0)) {
+            return res.status(400).json({ message: 'Portion size must be a positive number' });
+        }
 
         const updatedItem = await menuService.update(Number(req.params.id), {
             name,
             price: Number(price),
-            description,
+            description: description || null,
             is_available: is_available === 'true' || is_available === true,
             category_id: category_id ? Number(category_id) : null,
-            is_special: is_special === 'true' || is_special === true, 
-            ...(image_url && { image_url })
+            is_special: is_special === 'true' || is_special === true,
+            image_url,
+            portion_size: portionSizeNumber,
         });
 
         if (!updatedItem) {
@@ -96,6 +110,7 @@ exports.updateDishWithFile = async (req, res, next) => {
         }
         res.json(updatedItem);
     } catch (err) {
+        console.error('Помилка в updateDishWithFile:', err.stack);
         next(err);
     }
 };
@@ -108,6 +123,7 @@ exports.update = async (req, res, next) => {
         }
         res.json(updatedItem);
     } catch (err) {
+        console.error('Error in update:', err.stack);
         next(err);
     }
 };

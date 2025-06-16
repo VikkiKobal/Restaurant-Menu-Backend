@@ -79,4 +79,16 @@ class AuthController {
     }
 }
 
+exports.likeDish = async (req, res) => {
+    const dishId = req.params.id;
+
+    try {
+        await menuService.incrementLikes(dishId);
+        res.status(200).json({ message: 'Like added successfully' });
+    } catch (error) {
+        console.error('Error liking dish:', error);
+        res.status(500).json({ error: 'Failed to like dish' });
+    }
+};
+
 module.exports = AuthController;
